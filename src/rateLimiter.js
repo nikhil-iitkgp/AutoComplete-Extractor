@@ -1,39 +1,44 @@
-/**
- * Delay execution for a given amount of time.
- * @param {number} ms - Milliseconds to delay.
- * @returns {Promise<void>}
- */
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Rate limiter to manage API request frequency.
- * @param {Function} fn - The function to execute with rate limiting.
- * @param {number} limit - Maximum requests allowed per minute.
- * @returns {Function} - A wrapped function with rate limiting.
+ * Adaptive rate limiter for API requests.
+ * @param {Function} fn - The function to wrap (API request function).
+ * @param {number} maxRequestsPerMinute - Max API requests per minute for this version.
+ * @returns {Function} - Rate-limited function.
  */
-const rateLimiter = (fn, limit) => {
-    const interval = 60000 / limit; // Time gap between requests (in ms)
+const rateLimiter = (fn, maxRequestsPerMinute) => {
+    const baseWaitTime = 60000 / maxRequestsPerMinute; // Initial wait time per request
     let lastRequestTime = 0;
+    let dynamicWaitTime = baseWaitTime; // Adaptive wait time
 
     return async (...args) => {
         const now = Date.now();
+        const timeSinceLastRequest = now - lastRequestTime;
 
-        // If this is the first request, execute immediately
-        if (lastRequestTime === 0) {
-            lastRequestTime = now;
-            return fn(...args);
+        // Enforce wait time before making the next request
+        if (lastRequestTime && timeSinceLastRequest < dynamicWaitTime) {
+            const waitTime = dynamicWaitTime - timeSinceLastRequest;
+            console.log(`⏳ Waiting ${waitTime.toFixed(0)}ms before next request...`);
+            await delay(waitTime);
         }
 
-        const elapsedTime = now - lastRequestTime;
+        try {
+            lastRequestTime = Date.now();
+            const response = await fn(...args);
 
-        if (elapsedTime < interval) {
-            const waitTime = interval - elapsedTime;
-            console.log(`Waiting for ${waitTime}ms to avoid rate limit...`);
-            await delay(waitTime); // Wait before making the next request
+            // Reduce wait time slightly if requests are successful
+            dynamicWaitTime = Math.max(baseWaitTime * 0.9, baseWaitTime / 2);
+            return response;
+        } catch (error) {
+            if (error.response?.status === 429) {
+                dynamicWaitTime *= 1.5; // Increase wait time if rate limited
+                console.warn(`⚠ Rate limit hit! Increasing delay to ${dynamicWaitTime.toFixed(0)}ms and retrying...`);
+                await delay(dynamicWaitTime);
+                return await fn(...args); // Retry the request
+            } else {
+                throw error; // Allow non-429 errors to fail normally
+            }
         }
-
-        lastRequestTime = Date.now(); // Update last request time
-        return fn(...args);
     };
 };
 
