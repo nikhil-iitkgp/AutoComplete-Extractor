@@ -47,6 +47,11 @@ const scrapeNames = async (version) => {
         }
 
         const results = await fetchNamesLimited(queries[i]);
+
+        if (!Array.isArray(results)) {
+            console.warn(`Unexpected response for query "${queries[i]}":`, results);
+        }
+        
         results.forEach(name => namesSet.add(name));
         console.log(`Fetched ${results.length} names for query "${queries[i]}"`);
     }

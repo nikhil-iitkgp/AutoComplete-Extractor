@@ -1,6 +1,5 @@
 const axios = require("axios");
 
-// Base URL for the autocomplete API
 const BASE_URL = "http://35.200.185.69:8000/v1/autocomplete";
 
 /**
@@ -11,10 +10,12 @@ const BASE_URL = "http://35.200.185.69:8000/v1/autocomplete";
 const fetchNames = async (query) => {
     try {
         const response = await axios.get(`${BASE_URL}?query=${query}`);
-        return response.data || [];  // Return results or empty array
+
+        // Ensure response data is an array, otherwise return an empty array
+        return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
         console.error(`Error fetching query "${query}":`, error.message);
-        return [];
+        return []; // Return empty array on error
     }
 };
 
