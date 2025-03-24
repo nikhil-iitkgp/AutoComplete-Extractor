@@ -6,7 +6,7 @@ const API_VERSIONS = ["v1", "v2", "v3"];
  * Runs the scraper for the specified API version.
  */
 const run = async () => {
-    const version = process.argv[2]; // Get version from command-line args
+    const version = process.argv[2];
 
     if (!version || !API_VERSIONS.includes(version)) {
         console.error(`Usage: node index.js <version>`);

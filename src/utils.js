@@ -1,6 +1,6 @@
 /**
- * Delay execution for a given amount of time.
- * @param {number} ms - Milliseconds to delay.
+ * Utility function to delay execution.
+ * @param {number} ms - Time in milliseconds.
  * @returns {Promise<void>}
  */
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
