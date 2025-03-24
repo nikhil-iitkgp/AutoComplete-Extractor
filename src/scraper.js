@@ -1,9 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 const { fetchNames } = require("./api");
-const { rateLimiter, delay } = require("./rateLimiter");
+const { rateLimiter } = require("./rateLimiter");
+const { delay } = require("./utils");
 
-// Define API versions and their respective character sets and rate limits
+// Define API versions with their respective character sets and rate limits
 const API_VERSIONS = {
     v1: { chars: "abcdefghijklmnopqrstuvwxyz", maxRequests: 100 },
     v2: { chars: "abcdefghijklmnopqrstuvwxyz0123456789", maxRequests: 50 },
@@ -11,7 +12,7 @@ const API_VERSIONS = {
 };
 
 // Rate-limit API requests based on version constraints
-const fetchNamesLimited = rateLimiter(fetchNames, API_VERSIONS.v1.maxRequests); // Change limit based on version
+const fetchNamesLimited = rateLimiter(fetchNames, API_VERSIONS.v1.maxRequests);
 
 /**
  * Generates all possible 2-character query combinations.
@@ -36,7 +37,10 @@ const scrapeNames = async (version) => {
     const { chars, maxRequests } = API_VERSIONS[version];
     const queries = generateQueries(chars);
     const outputFile = path.join(__dirname, `../output/names_${version}.txt`);
+    const errorLogFile = path.join(__dirname, `../output/errors_${version}.log`);
+
     const namesSet = new Set();
+    let failedQueries = [];
 
     console.log(`Starting scraping for ${version} with ${queries.length} queries...`);
 
@@ -50,15 +54,27 @@ const scrapeNames = async (version) => {
 
         if (!Array.isArray(results)) {
             console.warn(`Unexpected response for query "${queries[i]}":`, results);
+            failedQueries.push(queries[i]);
+            continue;
         }
-        
-        results.forEach(name => namesSet.add(name));
-        console.log(`Fetched ${results.length} names for query "${queries[i]}"`);
+
+        if (results.length > 0) {
+            results.forEach(name => namesSet.add(name));
+            console.log(`Fetched ${results.length} names for query "${queries[i]}"`);
+        } else {
+            failedQueries.push(queries[i]);
+        }
     }
 
     // Save results to file
     fs.writeFileSync(outputFile, Array.from(namesSet).join("\n"));
     console.log(`Scraping completed for ${version}. Results saved to ${outputFile}`);
+
+    // Log failed queries for debugging
+    if (failedQueries.length > 0) {
+        fs.writeFileSync(errorLogFile, failedQueries.join("\n"));
+        console.warn(`Some queries failed. Check ${errorLogFile} for details.`);
+    }
 };
 
 module.exports = { scrapeNames };

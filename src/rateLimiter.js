@@ -1,18 +1,13 @@
-/**
- * Delay execution for a given amount of time.
- * @param {number} ms - Milliseconds to delay.
- * @returns {Promise<void>}
- */
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const { delay } = require("./utils");
 
 /**
- * Rate limiter to manage API request frequency.
+ * Rate limiter to manage API request frequency dynamically.
  * @param {Function} fn - The function to execute with rate limiting.
  * @param {number} limit - Maximum requests allowed per minute.
  * @returns {Function} - A wrapped function with rate limiting.
  */
 const rateLimiter = (fn, limit) => {
-    const interval = 60000 / limit; // Time gap between requests (in ms)
+    const interval = Math.ceil(60000 / limit); // Calculate interval dynamically
     let lastRequestTime = 0;
 
     return async (...args) => {
@@ -28,4 +23,4 @@ const rateLimiter = (fn, limit) => {
     };
 };
 
-module.exports = { delay, rateLimiter };
+module.exports = { rateLimiter };
