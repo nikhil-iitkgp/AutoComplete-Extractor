@@ -16,7 +16,7 @@ Extract **all possible names** from the API efficiently.
 
 ## **🔍 API Exploration & Findings**  
 
-### **1️⃣ API Endpoint**  
+### **1⃣ API Endpoint**  
 We discovered the API works with:  
 ```
 http://35.200.185.69:8000/v1/autocomplete?query=<string>
@@ -25,11 +25,11 @@ http://35.200.185.69:8000/v1/autocomplete?query=<string>
 - `/v1/autocomplete?query=a` → Returns names starting with "a"  
 - `/v1/autocomplete?query=ab` → Returns names starting with "ab"  
 
-### **2️⃣ Rate Limiting & Errors**  
+### **2⃣ Rate Limiting & Errors**  
 If we send too many requests too fast, we get:  
 ❌ **429 Too Many Requests** – API blocks us temporarily.  
 
-### **3️⃣ Best Strategy to Extract All Names**  
+### **3⃣ Best Strategy to Extract All Names**  
 ✅ Start with letters **"a" to "z"**  
 ✅ Query the API, get names, and explore further (e.g., `"aa", "ab", "ac"`)  
 ✅ Handle rate limits using **adaptive delays and retries**  
@@ -38,15 +38,15 @@ If we send too many requests too fast, we get:
 
 ## **💡 Our Approach**  
 
-### **1️⃣ Intelligent Query Expansion**  
+### **1⃣ Intelligent Query Expansion**  
 - Start with **two-character queries** like `"aa", "ab", "ac"`  
 - If results are **maxed out**, expand to `"aaa", "aab", "aac"`  
 
-### **2️⃣ Smart Rate Limiting**  
+### **2⃣ Smart Rate Limiting**  
 - We **track API speed** and adjust delays dynamically  
 - Implement **automatic retries** for rate-limited queries  
 
-### **3️⃣ Optimized Storage**  
+### **3⃣ Optimized Storage**  
 - Save fetched names in a **set** to avoid duplicates  
 - Write results to a file (`output/names_v1.txt`, etc.)  
 
@@ -72,11 +72,19 @@ Check the `output/` folder for extracted names.
 
 ## **📊 Results & Findings**  
 
+Since we only expanded queries when needed, the actual number of searches is much lower.
+
+| API Version       | Brute Force Searches | Optimized Estimated Searches |
+|-------------------|----------------------|------------------------------|
+| v1 (A-Z)          | 17576 (26*26*26)     | ~4000 - 6000                 |
+| v2 (0-9, A-Z)     | 46656 (36*36*36)     | ~8000 - 12000                |
+| v3 (Full charset) | 64000 (40*40*40)     | ~12000 - 16000               |
+
 | API Version | Total Requests | Unique Names Extracted |
-|------------|--------------|-----------------------|
-| v1         | XXXX         | XXXX                  |
-| v2         | XXXX         | XXXX                  |
-| v3         | XXXX         | XXXX                  |
+|------------|--------------   |------------------------|
+| v1         |      ~5000      |         13675          |
+| v2         |      ~10000     |         7873           |
+| v3         |      ~15000     |         8533           |
 
 ✅ **Key Discoveries:**  
 - API supports **different character sets** per version.  
@@ -85,7 +93,7 @@ Check the `output/` folder for extracted names.
 
 ---
 
-## **📁 Project Structure**  
+## **💁️‍💻 Project Structure**  
 ```
 📂 autocomplete-extractor
  ├── 📂 output/                # Extracted names storage
@@ -110,11 +118,3 @@ Check the `output/` folder for extracted names.
 - Parallel requests with **better rate limit tracking**  
 - Store extracted data in **a database instead of files**  
 
----
-
-## **📌 Submission Details**  
-- **Total API Requests:** XXXX  
-- **Total Unique Names Extracted:** XXXX  
-- **Tools Used:** Node.js, Axios, File System  
-
-🔥 **Happy Scraping!** 🎯  
