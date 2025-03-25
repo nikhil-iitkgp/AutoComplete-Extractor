@@ -11,6 +11,7 @@ const API_VERSIONS = {
 // **Dynamic Rate Limit Handling**
 const BASE_DELAY = 300; // Initial delay (ms)
 let currentDelay = BASE_DELAY;
+let totalRequests = 0; // Track total requests
 
 /**
  * Fetch names with rate limit handling
@@ -26,6 +27,8 @@ const fetchNamesWithRateLimit = async (query, version) => {
         const startTime = Date.now();
         const results = await fetchNames[version](query);
         const endTime = Date.now();
+
+        totalRequests++; // Increment request count
 
         // Adjust delay based on API response time
         const responseTime = endTime - startTime;
@@ -117,6 +120,8 @@ const scrapeNames = async (version) => {
     // Save results to file
     fs.writeFileSync(outputFilePath, Array.from(namesSet).join("\n"));
     console.log(`✅ Optimized scraping completed for ${version}. Results saved to ${outputFilePath}`);
+    console.log(`📊 Total API requests made: ${totalRequests}`);
 };
 
 module.exports = { scrapeNames };
+
