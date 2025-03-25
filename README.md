@@ -82,9 +82,9 @@ Since we only expanded queries when needed, the actual number of searches is muc
 
 | API Version | Total Requests | Unique Names Extracted |
 |------------|--------------   |------------------------|
-| v1         |      ~5000      |         13675          |
+| v1         |      13048      |         13676          |
 | v2         |      ~10000     |         7873           |
-| v3         |      ~15000     |         8533           |
+| v3         |      9015     |         8533           |
 
 ✅ **Key Discoveries:**  
 - API supports **different character sets** per version.  
